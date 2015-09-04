@@ -5,6 +5,8 @@ using System;
 using System.Security;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using HtmlAgilityPack;
+using System.Xml;
 
 namespace AutoIntern
 {
@@ -36,7 +38,9 @@ namespace AutoIntern
 			if (response.StatusCode != HttpStatusCode.OK)
 				return new List<Company> ();
 			//Parse table into Company objects
-
+			HtmlDocument htmlDoc = new HtmlDocument();	
+			htmlDoc.LoadHtml (response.Content);
+			HtmlNode companyTable = htmlDoc.DocumentNode.SelectNodes ("//table")[3];
 
 			return new List<Company> ();
 		}
