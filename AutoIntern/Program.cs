@@ -8,6 +8,7 @@ namespace AutoIntern
 		{
 			Console.WriteLine ("Hello World");
 			LibIntern intern = new LibIntern ();
+			var x = intern.GetCompanies ();
 		}
 	}
 }

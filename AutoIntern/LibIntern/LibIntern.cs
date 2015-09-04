@@ -4,6 +4,7 @@ using System.Net;
 using System;
 using System.Security;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace AutoIntern
 {
@@ -26,17 +27,31 @@ namespace AutoIntern
 			ConArt.Out ("Logged in");
 		}
 
+		public List<Company> GetCompanies ()
+		{
+			RestClient client = new RestClient (@"http://internship.iitm.ac.in/students/comp_list.php");
+			RestRequest request = new RestRequest (Method.GET);
+			request.AddCookie (cookie.Name, cookie.Value);
+			IRestResponse response = client.Execute (request);
+			if (response.StatusCode != HttpStatusCode.OK)
+				return new List<Company> ();
+			//Parse table into Company objects
+
+
+			return new List<Company> ();
+		}
+
 		public bool Login (ref char[] rollno, ref char[] password)
 		{
-			RestClient client = new RestClient (@"http://internship.iitm.ac.in/students/login.php");
-			RestRequest request = new RestRequest (Method.GET);
+			RestClient client = new RestClient (@"http://internship.iitm.ac.in/students/login.php") {
+				FollowRedirects = false
+			};
+			RestRequest request = new RestRequest (Method.POST);
 			request.AddParameter ("rollno", new string (rollno), ParameterType.GetOrPost);
 			request.AddParameter ("pass", new string (password), ParameterType.GetOrPost);
 			request.AddParameter ("submit", "Login", ParameterType.GetOrPost);
 			IRestResponse response = client.Execute (request);
-			if (response.StatusCode != HttpStatusCode.OK)
-				return false;
-			if (response.ResponseUri.ToString ().Contains(@"http://internship.iitm.ac.in/students/login.php"))
+			if (response.StatusCode != HttpStatusCode.Found)
 				return false;
 			cookie = response.Cookies.First ();
 			WipeChar (ref rollno);
