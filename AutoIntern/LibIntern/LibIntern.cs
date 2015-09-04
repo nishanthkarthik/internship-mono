@@ -1,12 +1,11 @@
-﻿using RestSharp;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System;
-using System.Security;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
+using System.Security;
 using HtmlAgilityPack;
-using System.Xml;
+using RestSharp;
 
 namespace AutoIntern
 {
@@ -31,6 +30,7 @@ namespace AutoIntern
 
 		public List<Company> GetCompanies ()
 		{
+			List<Company> companyList = new List<Company> ();
 			RestClient client = new RestClient (@"http://internship.iitm.ac.in/students/comp_list.php");
 			RestRequest request = new RestRequest (Method.GET);
 			request.AddCookie (cookie.Name, cookie.Value);
@@ -38,10 +38,29 @@ namespace AutoIntern
 			if (response.StatusCode != HttpStatusCode.OK)
 				return new List<Company> ();
 			//Parse table into Company objects
-			HtmlDocument htmlDoc = new HtmlDocument();	
+			HtmlDocument htmlDoc = new HtmlDocument ();
 			htmlDoc.LoadHtml (response.Content);
-			HtmlNode companyTable = htmlDoc.DocumentNode.SelectNodes ("//table")[3];
+			HtmlNode companyTable = htmlDoc.DocumentNode.SelectNodes ("//table") [3];
 
+			//TODO: Clean bad html using TIDY
+			// http://sourceforge.net/projects/tidynet/
+
+
+			//Select rows
+			HtmlNodeCollection rowsList = companyTable.SelectNodes ("tr");
+			for (int i = 1; i < rowsList.Count; ++i)
+			{
+				HtmlNodeCollection columnList = rowsList [i].SelectNodes ("td");
+				Company company = new Company ();
+				company.name = columnList [1].InnerText;
+				company.profile = columnList [2].InnerText;
+				company.talkDate = DateTime.Parse(columnList [3].InnerText);
+				company.resumeDeadline = DateTime.Parse(columnList [4].InnerText);
+				company.testDate = DateTime.Parse(columnList [5].InnerText);
+				company.gdDate = DateTime.Parse(columnList [6].InnerText);
+                company.status = Parsers.ParseStatus(columnList[7].InnerText);
+				companyList.Add(company);
+            }
 			return new List<Company> ();
 		}
 
@@ -72,7 +91,8 @@ namespace AutoIntern
 				if (i.Key == ConsoleKey.Enter)
 				{
 					break;
-				} else if (i.Key == ConsoleKey.Backspace)
+				}
+				if (i.Key == ConsoleKey.Backspace)
 				{
 					if (pwd.Length > 0)
 					{
@@ -96,7 +116,7 @@ namespace AutoIntern
 			char[] chars = new char[length];
 
 			if (length == 0)
-				return new char[] { 'N', 'N' };
+				return new [] { 'N', 'N' };
 
 			try
 			{
@@ -119,4 +139,3 @@ namespace AutoIntern
 		}
 	}
 }
-
