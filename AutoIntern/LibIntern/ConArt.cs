@@ -10,13 +10,13 @@ namespace AutoIntern
 			switch (msgtype)
 			{
 			case MessageType.Error:
-				Console.ForegroundColor = ConsoleColor.DarkRed;
+				Console.ForegroundColor = ConsoleColor.Red;
 				break;
 			case MessageType.Warning:
-				Console.ForegroundColor = ConsoleColor.DarkYellow;
+				Console.ForegroundColor = ConsoleColor.Yellow;
 				break;
 			case MessageType.Info:
-				Console.ForegroundColor = ConsoleColor.DarkBlue;
+				Console.ForegroundColor = ConsoleColor.Blue;
 				break;
 			}
 			Console.Write (msgtype);

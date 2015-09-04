@@ -6,7 +6,8 @@ namespace AutoIntern
 	{
 		public static void Main (string[] args)
 		{
-			
+			Console.WriteLine ("Hello World");
+			LibIntern intern = new LibIntern ();
 		}
 	}
 }
