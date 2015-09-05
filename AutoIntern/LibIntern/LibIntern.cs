@@ -9,6 +9,7 @@ using RestSharp;
 using TidyNet;
 using System.IO;
 using System.Text;
+using RestSharp.Extensions.MonoHttp;
 
 namespace AutoIntern
 {
@@ -58,22 +59,25 @@ namespace AutoIntern
 			htmlDoc.LoadHtml (cleanHtml);
 			HtmlNode companyTable = htmlDoc.DocumentNode.SelectNodes ("//table") [3];
 
-			//Select rows
+			//Select rows and parse data within
 			HtmlNodeCollection rowsList = companyTable.SelectNodes ("tr");
 			for (int i = 1; i < rowsList.Count; ++i)
 			{
 				HtmlNodeCollection columnList = rowsList [i].SelectNodes ("td");
 				Company company = new Company ();
-				company.name = columnList [1].InnerText;
-				company.profile = columnList [2].InnerText;
-				company.talkDate = DateTime.Parse(columnList [3].InnerText);
-				company.resumeDeadline = DateTime.Parse(columnList [4].InnerText);
-				company.testDate = DateTime.Parse(columnList [5].InnerText);
-				company.gdDate = DateTime.Parse(columnList [6].InnerText);
-                company.status = Parsers.ParseStatus(columnList[7].InnerText);
+				company.Name = columnList [1].InnerText;
+				company.Profile = columnList [2].InnerText;
+				string profileAddress = columnList [2].SelectSingleNode ("a").GetAttributeValue ("href","");
+				company.DetailUri = new Uri ("http://internship.iitm.ac.in/students/" + HttpUtility.HtmlDecode(profileAddress), UriKind.Absolute);
+				DateTime.TryParse(columnList [3].InnerText, out company.TalkDate);
+				DateTime.TryParse(columnList [4].InnerText, out company.ResumeDeadline);
+				DateTime.TryParse(columnList [5].InnerText, out company.TestDate);
+				DateTime.TryParse(columnList [6].InnerText, out company.GdDate);
+				DateTime.TryParse(columnList [7].InnerText, out company.TalkDate);
+                company.Status = Parsers.ParseStatus(columnList[7].InnerText);
 				companyList.Add(company);
             }
-			return new List<Company> ();
+			return companyList;
 		}
 
 		public bool Login (ref char[] rollno, ref char[] password)

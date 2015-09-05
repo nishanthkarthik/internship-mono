@@ -4,13 +4,14 @@ namespace AutoIntern
 {
 	public class Company
 	{
-		public string name;
-		public string profile;
-		public DateTime talkDate;
-		public DateTime resumeDeadline;
-        public DateTime testDate;
-		public DateTime gdDate;
-        public RegisterStatus status;
+		public string Name;
+		public string Profile;
+		public DateTime TalkDate;
+		public DateTime ResumeDeadline;
+        public DateTime TestDate;
+		public DateTime GdDate;
+        public RegisterStatus Status;
+		public Uri DetailUri;
     }
 
 	public static class Parsers
