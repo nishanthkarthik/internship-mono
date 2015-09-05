@@ -6,6 +6,9 @@ using System.Runtime.InteropServices;
 using System.Security;
 using HtmlAgilityPack;
 using RestSharp;
+using TidyNet;
+using System.IO;
+using System.Text;
 
 namespace AutoIntern
 {
@@ -37,14 +40,23 @@ namespace AutoIntern
 			IRestResponse response = client.Execute (request);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return new List<Company> ();
-			//Parse table into Company objects
-			HtmlDocument htmlDoc = new HtmlDocument ();
-			htmlDoc.LoadHtml (response.Content);
-			HtmlNode companyTable = htmlDoc.DocumentNode.SelectNodes ("//table") [3];
-
+			
 			//TODO: Clean bad html using TIDY
 			// http://sourceforge.net/projects/tidynet/
+			Tidy tidy = new Tidy();
+			MemoryStream input = new MemoryStream ();
+			MemoryStream output = new MemoryStream ();
+			byte[] badHtml = Encoding.UTF8.GetBytes (response.Content);
+			input.Write(badHtml, 0,badHtml.Length);
+			input.Position = 0;
+			TidyMessageCollection tidyMsg = new TidyMessageCollection ();
+			tidy.Parse (input, output, tidyMsg);
+			string cleanHtml = Encoding.UTF8.GetString (output.ToArray ());
 
+			//Parse table into Company objects
+			HtmlDocument htmlDoc = new HtmlDocument ();
+			htmlDoc.LoadHtml (cleanHtml);
+			HtmlNode companyTable = htmlDoc.DocumentNode.SelectNodes ("//table") [3];
 
 			//Select rows
 			HtmlNodeCollection rowsList = companyTable.SelectNodes ("tr");
