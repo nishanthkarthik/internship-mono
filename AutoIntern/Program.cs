@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace AutoIntern
 {
@@ -8,7 +10,13 @@ namespace AutoIntern
 		{
 			Console.WriteLine ("Hello World");
 			LibIntern intern = new LibIntern ();
-			var x = intern.GetCompanies ();
+			List<Company> x = intern.GetCompanies ();
+			ConArt.Out ("Applied Companies");
+			foreach (var item in x.Where(a => a.Status == RegisterStatus.Applied))
+			{
+				Console.WriteLine (item.Name);
+			}
+			string sampleTextToBeRegexed = intern.GetCompanyDetails (x [0]);
 		}
 	}
 }

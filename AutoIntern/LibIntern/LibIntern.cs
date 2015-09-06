@@ -41,18 +41,7 @@ namespace AutoIntern
 			IRestResponse response = client.Execute (request);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return new List<Company> ();
-			
-			//TODO: Clean bad html using TIDY
-			// http://sourceforge.net/projects/tidynet/
-			Tidy tidy = new Tidy();
-			MemoryStream input = new MemoryStream ();
-			MemoryStream output = new MemoryStream ();
-			byte[] badHtml = Encoding.UTF8.GetBytes (response.Content);
-			input.Write(badHtml, 0,badHtml.Length);
-			input.Position = 0;
-			TidyMessageCollection tidyMsg = new TidyMessageCollection ();
-			tidy.Parse (input, output, tidyMsg);
-			string cleanHtml = Encoding.UTF8.GetString (output.ToArray ());
+			string cleanHtml = CleanHtml (response.Content);
 
 			//Parse table into Company objects
 			HtmlDocument htmlDoc = new HtmlDocument ();
@@ -78,6 +67,40 @@ namespace AutoIntern
 				companyList.Add(company);
             }
 			return companyList;
+		}
+
+		public List<Company> GetOpenCompanies(List<Company> companies)
+		{
+			return null;
+		}
+
+		public string GetCompanyDetails(Company company)
+		{
+			RestClient client = new RestClient (company.DetailUri.ToString());
+			RestRequest request = new RestRequest (Method.GET);
+			request.AddCookie (cookie.Name, cookie.Value);
+			IRestResponse response = client.Execute (request);
+			if (response.StatusCode != HttpStatusCode.OK)
+				return string.Empty;
+			string cleanHtml = CleanHtml (response.Content);
+			HtmlDocument htmlDoc = new HtmlDocument ();
+			htmlDoc.LoadHtml (cleanHtml);
+			return HttpUtility.HtmlDecode(htmlDoc.DocumentNode.InnerText.Replace("\n",string.Empty).Replace("\r",string.Empty));
+		}
+
+		private static string CleanHtml(string badHtmlString)
+		{
+			//Clean bad html using TIDY
+			// http://sourceforge.net/projects/tidynet/
+			Tidy tidy = new Tidy();
+			MemoryStream input = new MemoryStream ();
+			MemoryStream output = new MemoryStream ();
+			byte[] badHtml = Encoding.UTF8.GetBytes (badHtmlString);
+			input.Write(badHtml, 0,badHtml.Length);
+			input.Position = 0;
+			TidyMessageCollection tidyMsg = new TidyMessageCollection ();
+			tidy.Parse (input, output, tidyMsg);
+			return Encoding.UTF8.GetString (output.ToArray ());
 		}
 
 		public bool Login (ref char[] rollno, ref char[] password)
