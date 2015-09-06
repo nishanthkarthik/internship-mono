@@ -8,7 +8,6 @@ namespace AutoIntern
 	{
 		public static void Main (string[] args)
 		{
-			Console.WriteLine ("Hello World");
 			LibIntern intern = new LibIntern ();
 			List<Company> x = intern.GetCompanies ();
 			ConArt.Out ("Applied Companies");
@@ -16,7 +15,9 @@ namespace AutoIntern
 			{
 				Console.WriteLine (item.Name);
 			}
-			string sampleTextToBeRegexed = intern.GetCompanyDetails (x [0]);
+			ConArt.Out ("Open Companies for Mech Duals");
+			foreach (Company company in intern.GetOpenCompanies(@"Dual Degree.+(All|Mech)"))
+				Console.WriteLine (company.Name);
 		}
 	}
 }

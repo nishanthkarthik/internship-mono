@@ -10,6 +10,7 @@ using TidyNet;
 using System.IO;
 using System.Text;
 using RestSharp.Extensions.MonoHttp;
+using System.Text.RegularExpressions;
 
 namespace AutoIntern
 {
@@ -54,7 +55,7 @@ namespace AutoIntern
 			{
 				HtmlNodeCollection columnList = rowsList [i].SelectNodes ("td");
 				Company company = new Company ();
-				company.Name = columnList [1].InnerText;
+				company.Name = columnList [1].InnerText.Replace("\n","");
 				company.Profile = columnList [2].InnerText;
 				string profileAddress = columnList [2].SelectSingleNode ("a").GetAttributeValue ("href","");
 				company.DetailUri = new Uri ("http://internship.iitm.ac.in/students/" + HttpUtility.HtmlDecode(profileAddress), UriKind.Absolute);
@@ -69,12 +70,18 @@ namespace AutoIntern
 			return companyList;
 		}
 
-		public List<Company> GetOpenCompanies(List<Company> companies)
+		public Company[] GetOpenCompanies(string companyRegexPattern)
 		{
-			return null;
+			return GetCompanies().Where(company => IsOpen(GetCompanyDetails(company), companyRegexPattern)).ToArray();
 		}
 
-		public string GetCompanyDetails(Company company)
+		private bool IsOpen(string companyString, string branchQueryRegex)
+		{
+			Regex regex = new Regex (branchQueryRegex);
+			return regex.IsMatch (companyString);
+		}
+
+		private string GetCompanyDetails(Company company)
 		{
 			RestClient client = new RestClient (company.DetailUri.ToString());
 			RestRequest request = new RestRequest (Method.GET);
