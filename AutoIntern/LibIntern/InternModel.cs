@@ -12,7 +12,7 @@ namespace AutoIntern
 		public DateTime GdDate;
         public RegisterStatus Status;
 		public Uri DetailUri;
-		public long Salary;
+		public string DetailSnippet;
     }
 
 	public static class Parsers

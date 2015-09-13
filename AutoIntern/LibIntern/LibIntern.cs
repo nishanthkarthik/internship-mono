@@ -17,6 +17,7 @@ namespace AutoIntern
 	public class LibIntern
 	{
 		RestResponseCookie cookie;
+	 	public	List<Company> TotalCompanies;
 
 		public LibIntern ()
 		{
@@ -31,6 +32,7 @@ namespace AutoIntern
 				Environment.Exit (-1);
 			}
 			ConArt.Out ("Logged in");
+			TotalCompanies = GetCompanies ();
 		}
 
 		public List<Company> GetCompanies ()
@@ -65,7 +67,7 @@ namespace AutoIntern
 				DateTime.TryParse (columnList [6].InnerText, out company.GdDate);
 				DateTime.TryParse (columnList [7].InnerText, out company.TalkDate);
 				company.Status = Parsers.ParseStatus (columnList [7].InnerText);
-				company.Salary = ParseSalary (GetCompanyDetails (company));
+				company.DetailSnippet = GetCompanyDetails (company);
 				companyList.Add (company);
 			}
 			return companyList;
@@ -73,7 +75,7 @@ namespace AutoIntern
 
 		public Company[] GetOpenCompanies (string companyRegexPattern)
 		{
-			return GetCompanies ().Where (company => IsOpen (GetCompanyDetails (company), companyRegexPattern)).ToArray ();
+			return (TotalCompanies as List<Company>).Where (company => IsOpen (company.DetailSnippet, companyRegexPattern)).ToArray ();
 		}
 
 		bool IsOpen (string companyString, string branchQueryRegex)
@@ -82,7 +84,7 @@ namespace AutoIntern
 			return regex.IsMatch (companyString);
 		}
 
-		long ParseSalary (string companyString)
+		public long ParseSalary (string companyString)
 		{
 			const string regexString = @"Amount\s+:\s+\d+";
 			Regex regex = new Regex (regexString);

@@ -16,7 +16,7 @@ namespace AutoIntern
 				regexPattern = @"Dual Degree.+(All|Mech)";
 			
 			LibIntern intern = new LibIntern ();
-			List<Company> companies = intern.GetCompanies ();
+			List<Company> companies = intern.TotalCompanies;
 
 			//Applied companies list
 			ConArt.Out ("Applied Companies");
@@ -33,7 +33,7 @@ namespace AutoIntern
 			Company[] openCompanies = intern.GetOpenCompanies (regexPattern).ToArray ();
 			if (openCompanies.Length > 0)
 				for (int i = 0; i < openCompanies.Length; ++i)
-					Console.WriteLine (openCompanies [i].Name + " - Rs." + openCompanies[i].Salary);
+					Console.WriteLine (openCompanies [i].Name + " - Rs." + intern.ParseSalary(openCompanies[i].DetailSnippet));
 			else
 				ConArt.Out ("No open company found", MessageType.Warning);
 
