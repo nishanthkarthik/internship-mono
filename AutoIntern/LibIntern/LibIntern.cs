@@ -16,7 +16,7 @@ namespace AutoIntern
 {
 	public class LibIntern
 	{
-		private	RestResponseCookie cookie;
+		RestResponseCookie cookie;
 
 		public LibIntern ()
 		{
@@ -55,35 +55,46 @@ namespace AutoIntern
 			{
 				HtmlNodeCollection columnList = rowsList [i].SelectNodes ("td");
 				Company company = new Company ();
-				company.Name = columnList [1].InnerText.Replace("\n","");
+				company.Name = columnList [1].InnerText.Replace ("\n", "");
 				company.Profile = columnList [2].InnerText;
-				string profileAddress = columnList [2].SelectSingleNode ("a").GetAttributeValue ("href","");
-				company.DetailUri = new Uri ("http://internship.iitm.ac.in/students/" + HttpUtility.HtmlDecode(profileAddress), UriKind.Absolute);
-				DateTime.TryParse(columnList [3].InnerText, out company.TalkDate);
-				DateTime.TryParse(columnList [4].InnerText, out company.ResumeDeadline);
-				DateTime.TryParse(columnList [5].InnerText, out company.TestDate);
-				DateTime.TryParse(columnList [6].InnerText, out company.GdDate);
-				DateTime.TryParse(columnList [7].InnerText, out company.TalkDate);
-                company.Status = Parsers.ParseStatus(columnList[7].InnerText);
-				companyList.Add(company);
-            }
+				string profileAddress = columnList [2].SelectSingleNode ("a").GetAttributeValue ("href", "");
+				company.DetailUri = new Uri ("http://internship.iitm.ac.in/students/" + HttpUtility.HtmlDecode (profileAddress), UriKind.Absolute);
+				DateTime.TryParse (columnList [3].InnerText, out company.TalkDate);
+				DateTime.TryParse (columnList [4].InnerText, out company.ResumeDeadline);
+				DateTime.TryParse (columnList [5].InnerText, out company.TestDate);
+				DateTime.TryParse (columnList [6].InnerText, out company.GdDate);
+				DateTime.TryParse (columnList [7].InnerText, out company.TalkDate);
+				company.Status = Parsers.ParseStatus (columnList [7].InnerText);
+				company.Salary = ParseSalary (GetCompanyDetails (company));
+				companyList.Add (company);
+			}
 			return companyList;
 		}
 
-		public Company[] GetOpenCompanies(string companyRegexPattern)
+		public Company[] GetOpenCompanies (string companyRegexPattern)
 		{
-			return GetCompanies().Where(company => IsOpen(GetCompanyDetails(company), companyRegexPattern)).ToArray();
+			return GetCompanies ().Where (company => IsOpen (GetCompanyDetails (company), companyRegexPattern)).ToArray ();
 		}
 
-		private bool IsOpen(string companyString, string branchQueryRegex)
+		bool IsOpen (string companyString, string branchQueryRegex)
 		{
 			Regex regex = new Regex (branchQueryRegex);
 			return regex.IsMatch (companyString);
 		}
 
-		private string GetCompanyDetails(Company company)
+		long ParseSalary (string companyString)
 		{
-			RestClient client = new RestClient (company.DetailUri.ToString());
+			const string regexString = @"Amount\s+:\s+\d+";
+			Regex regex = new Regex (regexString);
+			MatchCollection matches = regex.Matches (companyString);
+			if (matches.Count > 0)
+				return long.Parse (Regex.Match (matches [0].Value, @"\d+").Value);
+			return 0;
+		}
+
+		string GetCompanyDetails (Company company)
+		{
+			RestClient client = new RestClient (company.DetailUri.ToString ());
 			RestRequest request = new RestRequest (Method.GET);
 			request.AddCookie (cookie.Name, cookie.Value);
 			IRestResponse response = client.Execute (request);
@@ -92,18 +103,18 @@ namespace AutoIntern
 			string cleanHtml = CleanHtml (response.Content);
 			HtmlDocument htmlDoc = new HtmlDocument ();
 			htmlDoc.LoadHtml (cleanHtml);
-			return HttpUtility.HtmlDecode(htmlDoc.DocumentNode.InnerText.Replace("\n",string.Empty).Replace("\r",string.Empty));
+			return HttpUtility.HtmlDecode (htmlDoc.DocumentNode.InnerText.Replace ("\n", string.Empty).Replace ("\r", string.Empty));
 		}
 
-		private static string CleanHtml(string badHtmlString)
+		static string CleanHtml (string badHtmlString)
 		{
 			//Clean bad html using TIDY
 			// http://sourceforge.net/projects/tidynet/
-			Tidy tidy = new Tidy();
+			Tidy tidy = new Tidy ();
 			MemoryStream input = new MemoryStream ();
 			MemoryStream output = new MemoryStream ();
 			byte[] badHtml = Encoding.UTF8.GetBytes (badHtmlString);
-			input.Write(badHtml, 0,badHtml.Length);
+			input.Write (badHtml, 0, badHtml.Length);
 			input.Position = 0;
 			TidyMessageCollection tidyMsg = new TidyMessageCollection ();
 			tidy.Parse (input, output, tidyMsg);
@@ -128,7 +139,7 @@ namespace AutoIntern
 			return true;
 		}
 
-		private char[] getSecureText ()
+		char[] getSecureText ()
 		{
 			SecureString pwd = new SecureString ();
 			while (true)
@@ -155,7 +166,7 @@ namespace AutoIntern
 			return GetSecureArray (pwd);
 		}
 
-		private char[] GetSecureArray (SecureString source)
+		char[] GetSecureArray (SecureString source)
 		{
 			int length = source.Length;
 			IntPtr pointer = IntPtr.Zero;
@@ -178,7 +189,7 @@ namespace AutoIntern
 			return chars;
 		}
 
-		private void WipeChar (ref char[] secureText)
+		void WipeChar (ref char[] secureText)
 		{
 			for (int i = 0; i < secureText.Length; ++i)
 				secureText [i] = '\0';

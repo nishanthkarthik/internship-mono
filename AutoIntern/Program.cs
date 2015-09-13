@@ -8,16 +8,44 @@ namespace AutoIntern
 	{
 		public static void Main (string[] args)
 		{
+			//args matching
+			string regexPattern;
+			if (args.Length > 0)
+				regexPattern = args.First ();
+			else
+				regexPattern = @"Dual Degree.+(All|Mech)";
+			
 			LibIntern intern = new LibIntern ();
-			List<Company> x = intern.GetCompanies ();
+			List<Company> companies = intern.GetCompanies ();
+
+			//Applied companies list
 			ConArt.Out ("Applied Companies");
-			foreach (var item in x.Where(a => a.Status == RegisterStatus.Applied))
-			{
-				Console.WriteLine (item.Name);
-			}
+			Company[] appliedCompanies = companies.Where (a => a.Status == RegisterStatus.Applied).ToArray ();
+			if (appliedCompanies.Length > 0)
+				for (int i = 0; i < appliedCompanies.Length; ++i)
+					Console.WriteLine (appliedCompanies [i].Name);
+			else
+				ConArt.Out ("You have applied for no company", MessageType.Warning);
+
+			Console.WriteLine ();
+			//Open for Mech
 			ConArt.Out ("Open Companies for Mech Duals");
-			foreach (Company company in intern.GetOpenCompanies(@"Dual Degree.+(All|Mech)"))
-				Console.WriteLine (company.Name);
+			Company[] openCompanies = intern.GetOpenCompanies (regexPattern).ToArray ();
+			if (openCompanies.Length > 0)
+				for (int i = 0; i < openCompanies.Length; ++i)
+					Console.WriteLine (openCompanies [i].Name + " - Rs." + openCompanies[i].Salary);
+			else
+				ConArt.Out ("No open company found", MessageType.Warning);
+
+			Console.WriteLine ();
+			//Open for applications
+			ConArt.Out ("Companies accepting registrations");
+			Company[] regOpenCompanies = companies.Where (a => a.Status == RegisterStatus.Open).ToArray ();
+			if (regOpenCompanies.Length > 0)
+				for (int i = 0; i < regOpenCompanies.Length; ++i)
+					Console.WriteLine (regOpenCompanies [i].Name);
+			else
+				ConArt.Out ("No company accepts registration now", MessageType.Warning);
 		}
 	}
 }
