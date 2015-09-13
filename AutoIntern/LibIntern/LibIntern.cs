@@ -51,6 +51,7 @@ namespace AutoIntern
 			htmlDoc.LoadHtml (cleanHtml);
 			HtmlNode companyTable = htmlDoc.DocumentNode.SelectNodes ("//table") [3];
 
+			ConArt.Out ("Starting data collection...");
 			//Select rows and parse data within
 			HtmlNodeCollection rowsList = companyTable.SelectNodes ("tr");
 			for (int i = 1; i < rowsList.Count; ++i)
@@ -69,7 +70,14 @@ namespace AutoIntern
 				company.Status = Parsers.ParseStatus (columnList [7].InnerText);
 				company.DetailSnippet = GetCompanyDetails (company);
 				companyList.Add (company);
+
+				//Update progress bar
+				Console.CursorLeft = 0;
+				Console.Write ( (int)i * 100 / rowsList.Count + "% Complete" );
 			}
+			Console.CursorLeft = 0;
+			Console.WriteLine("                 ");
+
 			return companyList;
 		}
 
