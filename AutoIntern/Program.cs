@@ -30,7 +30,7 @@ namespace AutoIntern
 			Console.WriteLine ();
 			//Open for Mech
 			ConArt.Out ("Open Companies for Mech Duals");
-			Company[] openCompanies = intern.GetOpenCompanies (regexPattern).ToArray ();
+			Company[] openCompanies = intern.GetOpenCompanies (regexPattern).Where(x => x.Status != RegisterStatus.Applied && x.Status != RegisterStatus.Closed).ToArray ();
 			if (openCompanies.Length > 0)
 				for (int i = 0; i < openCompanies.Length; ++i)
 					Console.WriteLine (openCompanies [i].Name + " - Rs." + intern.ParseSalary(openCompanies[i].DetailSnippet));
